@@ -1,0 +1,31 @@
+import wixData from 'wix-data';
+
+export function calculateTotalCost(selectedOptions) {
+    return new Promise((resolve, reject) => {
+        // Fetch the pool options from the database
+        wixData.query("PoolOptions")
+            .eq("type", selectedOptions.type)
+            .eq("size", selectedOptions.size)
+            .find()
+            .then(results => {
+                if (results.items.length > 0) {
+                    let poolOptions = results.items[0];
+
+                    // Calculate total cost
+                    let totalCost = poolOptions.price;
+
+                    // Add cost of selected extras
+                    selectedOptions.extras.forEach(extra => {
+                        totalCost += poolOptions.extras[extra];
+                    });
+
+                    resolve(totalCost.toFixed(2));
+                } else {
+                    reject("Pool options not found");
+                }
+            })
+            .catch(err => {
+                reject(err);
+            });
+    });
+}
